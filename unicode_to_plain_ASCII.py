@@ -66,3 +66,69 @@ def filterPair(p, max_length, start_filter):
 for each pair (from pytorch)"""
 def filterPairs(pairs, max_length, start_filter):
     return [pair for pair in pairs if filterPair(pair, max_length, start_filter)]
+
+
+"""start of sentence tag"""
+SOS_token = 0
+
+"""end of sentence tag"""
+EOS_token = 1
+
+"""unknown word tag (this is used to handle words that are not in our Vocabulary)"""
+UNK_token = 2
+
+
+"""Lang class, used to store the vocabulary of each language"""
+class Lang:
+    def _init_(self, language):
+        self.language_name = language
+        self.word_to_index = {"SOS":SOS_token, "EOS":EOS_token, "<UNK>":UNK_token}
+        self.word_to_count = {}
+        self.index_to_word = {SOS_token: "SOS", EOS_token: "EOS", UNK_token: "<UNK>"}
+        self.vocab_size = 3
+        self.cutoff_point = -1
+
+
+    def countSentence(self, sentence):
+        for word in sentence.split(' '):
+            self.countWords(word)
+
+    """counts the number of times each word appears in the dataset"""
+    def countWords(self, word):
+        if word not in self.word_to_count:
+            self.word_to_count[word] = 1
+        else:
+            self.word_to_count[word] += 1
+
+    """if the number of unique words in the dataset is larger than the
+    specified max_vocab_size, creates a cutoff point that is used to
+    leave infrequent words out of the vocabulary"""
+    def createCutoff(self, max_vocab_size):
+        word_freqs = list(self.word_to_count.values())
+        word_freqs.sort(reverse=True)
+        if len(word_freqs) > max_vocab_size:
+            self.cutoff_point = word_freqs[max_vocab_size]
+
+    """assigns each unique word in a sentence a unique index"""
+    def addSentence(self, sentence):
+        new_sentence = ''
+        for word in sentence.split(' '):
+            unk_word = self.addWord(word)
+            if not new_sentence:
+                new_sentence =unk_word
+            else:
+                new_sentence = new_sentence + ' ' + unk_word
+        return new_sentence
+
+    """assigns a word a unique index if not already in vocabulary
+    and it appeaars often enough in the dataset
+    (self.word_to_count is larger than self.cutoff_point)"""
+    def addWord(self, word):
+        if self.word_to_count[word] > self.cutoff_point:
+            if word not in self.word_to_index:
+                self.word_to_index[word] = self.vocab_size
+                self.index_to_word[self.vocab_size] = word
+                self.vocab_size += 1
+            return word
+        else:
+            return self.index_to_word[2]
