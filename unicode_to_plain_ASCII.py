@@ -272,3 +272,39 @@ def prepareData(lang1, lang2, file_path, max_vocab_size=50000,
                             output_lang.vocab_size))
         
     return input_lang, output_lang, train_pairs, test_pairs
+"""converts a sentence to one hot encoding vectors - pytorch allows us to just
+use the number corresponding to the unique index for that word,
+rather than a complete one hot encoding vector for each word"""
+def indexesFromSentence(lang, sentence):
+    indexes = []
+    for word in sentence.split(' '):
+        try:
+            indexes.append(lang.word_to_index[word])
+        except:
+            indexes.append(lang.word_to_index["<UNK>"])
+    return indexes
+
+
+def tensorFromSentence(lang, sentence):
+    indexes = indexesFromSentence(lang, sentence)
+    indexes.append(EOS_token)
+    result = torch.LongTensor(indexes).view(-1)
+    if use_cuda:
+        return result.cuda()
+    else:
+        return result
+      
+"""converts a pair of sentence (input and target) to a pair of tensors"""
+def tensorsFromPair(input_lang, output_lang, pair):
+    input_variable = tensorFromSentence(input_lang, pair[0])
+    target_variable = tensorFromSentence(output_lang, pair[1])
+    return (input_variable, target_variable)
+  
+
+"""converts from tensor of one hot encoding vector indices to sentence"""
+def sentenceFromTensor(lang, tensor):
+    raw = tensor.data
+    words = []
+    for num in raw:
+        words.append(lang.index_to_word[num.item()])
+    return ' '.join(words)
