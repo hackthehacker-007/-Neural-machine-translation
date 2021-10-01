@@ -132,3 +132,81 @@ class Lang:
             return word
         else:
             return self.index_to_word[2]
+
+'''prepares both the input and output Lang classes from the passed dataset'''
+
+def prepareLangs(lang1, lang2, file_path, reverse=False):
+    print("Reading lines...")
+
+    if len(file_path) == 2:
+        lang1_lines = open(file_path[0], encoding='utf-8').\
+            read().strip().split('\n')
+
+        lang2_lines = open(file_path[1], encoding='utf-8').\
+            read().strip().split('\n')
+
+        if len(lang1_lines) != len(lang2_lines):
+            print("Input and output text sizes do not align")
+            print("Number of lang1 lines: %s " %len(lang1_lines))
+            print("Number of lang2 lines: %s " %len(lang2_lines))
+            quit()
+
+        pairs = []
+
+        for line in range(len(lang1_lines)):
+            pairs.append([normalizeString(lang1_lines[line]),
+                          normalizeString(lang2_lines[line])])            
+
+
+    elif len(file_path) == 1:
+        lines = open(file_path[0], encoding='utf-8').\
+    	read().strip().split('\n')
+        pairs = [[normalizeString(s) for s in l.split('\t')] for l in lines]
+
+    if reverse:
+        pairs = [list(reversed(p)) for p in pairs]
+        input_lang = Lang(lang2)
+        output_lang = Lang(lang1)
+    else:
+        input_lang = Lang(lang1)
+        output_lang = Lang(lang2)
+
+    return input_lang, output_lang, pairs'''prepares both the input and output Lang classes from the passed dataset'''
+
+def prepareLangs(lang1, lang2, file_path, reverse=False):
+    print("Reading lines...")
+
+    if len(file_path) == 2:
+        lang1_lines = open(file_path[0], encoding='utf-8').\
+            read().strip().split('\n')
+
+        lang2_lines = open(file_path[1], encoding='utf-8').\
+            read().strip().split('\n')
+
+        if len(lang1_lines) != len(lang2_lines):
+            print("Input and output text sizes do not align")
+            print("Number of lang1 lines: %s " %len(lang1_lines))
+            print("Number of lang2 lines: %s " %len(lang2_lines))
+            quit()
+
+        pairs = []
+
+        for line in range(len(lang1_lines)):
+            pairs.append([normalizeString(lang1_lines[line]),
+                          normalizeString(lang2_lines[line])])            
+
+
+    elif len(file_path) == 1:
+        lines = open(file_path[0], encoding='utf-8').\
+    	read().strip().split('\n')
+        pairs = [[normalizeString(s) for s in l.split('\t')] for l in lines]
+
+    if reverse:
+        pairs = [list(reversed(p)) for p in pairs]
+        input_lang = Lang(lang2)
+        output_lang = Lang(lang1)
+    else:
+        input_lang = Lang(lang1)
+        output_lang = Lang(lang2)
+
+    return input_lang, output_lang, pairs
