@@ -308,3 +308,34 @@ def sentenceFromTensor(lang, tensor):
     for num in raw:
         words.append(lang.index_to_word[num.item()])
     return ' '.join(words)
+"""seperates data into batches of size batch_size"""
+def batchify(data, input_lang, output_lang, batch_size, shuffle_data=True):
+    if shuffle_data == True:
+        shuffle(data)
+    number_of_batches = len(data) // batch_size
+    batches = list(range(number_of_batches))
+    longest_elements = list(range(number_of_batches))
+    
+    for batch_number in range(number_of_batches):
+        longest_input = 0
+        longest_target = 0
+        input_variables = list(range(batch_size))
+        target_variables = list(range(batch_size))
+        index = 0      
+        for pair in range((batch_number*batch_size),((batch_number+1)*batch_size)):
+            input_variables[index], target_variables[index] = tensorsFromPair(input_lang, output_lang, data[pair])
+            if len(input_variables[index]) >= longest_input:
+                longest_input = len(input_variables[index])
+            if len(target_variables[index]) >= longest_target:
+                longest_target = len(target_variables[index])
+            index += 1
+        batches[batch_number] = (input_variables, target_variables)
+        longest_elements[batch_number] = (longest_input, longest_target)
+    return batches , longest_elements, number_of_batches
+
+
+"""pads batches to allow for sentences of variable lengths to be computed in parallel"""
+def pad_batch(batch):
+    padded_inputs = torch.nn.utils.rnn.pad_sequence(batch[0],padding_value=EOS_token)
+    padded_targets = torch.nn.utils.rnn.pad_sequence(batch[1],padding_value=EOS_token)
+    return (padded_inputs, padded_targets)
